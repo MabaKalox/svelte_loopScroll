@@ -1,9 +1,9 @@
 <script>
 	import { onMount, afterUpdate } from 'svelte';
 
-	export const card_height_px = 50;
+	export let card_height_px = 50;
 	export let card_quantity = 24;
-	export const card_displayed = 12;
+	export let card_displayed = 12;
 
 	// Determine if device support touch
 	let isMobile = (
@@ -97,6 +97,7 @@
 	{:else}
 		<button on:click={reset_hoursArray}>Reset</button>
 	{/if}
+	<Hour hour={10}></Hour>
 	<div
 		id="timeslots_wrapper"
 		class="timeslots_wrapper"
