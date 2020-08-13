@@ -1,31 +1,22 @@
 <script>
-	import Hour from './Nested/Hour.svelte'
 	import { onMount, afterUpdate } from 'svelte';
-	const card_height_px = 50;
-	let card_quantity = 24;
-	const card_displayed = 12;
+
+	export const card_height_px = 50;
+	export let card_quantity = 24;
+	export const card_displayed = 12;
+
+	// Determine if device support touch
 	let isMobile = (
 		Boolean("ontouchstart" in window) ||
 		Boolean(navigator.msMaxTouchPoints)
 	);
-	// Color
-	const index_to_rgb = (color_coff, shift_coff) => {
-		const twoPI = Math.PI*2;
-		return 128+(
-			Math.floor(127*Math.sin(twoPI*(color_coff+shift_coff/3)))
-		)
-	}
 
-	let hoursArray = Array(card_quantity).fill().map((_, i, arr) => {
-		const hour_def = {hour: i, color: null}
-		const color_coff = i/(arr.length-1);
-		const red = index_to_rgb(color_coff, 0)
-		const green = index_to_rgb(color_coff, 2)
-		const blue = index_to_rgb(color_coff, 1)
-		hour_def.color = `rgb(${red}, ${green}, ${blue})`
-		return hour_def;
+	// generaye simply array with given lenght and fill by indexes
+	let hoursArray = Array(card_quantity).fill().map((_, i) => {
+		return {'hour': i};
 	});
 
+	// Test functional for updating base hoursArray
 	const hoursArray_copy = [...hoursArray]
 	const remove_hour = () => {
 		hoursArray = hoursArray.slice(1)
@@ -33,7 +24,9 @@
 	const reset_hoursArray = () => {
 		hoursArray = [...hoursArray_copy]
 	}
-
+	// keep reactivity updateting hours quantity
+	$: card_quantity = hoursArray.length
+	
 	onMount(() => {
 		const timeslots_wrapper = document.getElementById("timeslots_wrapper")
 		timeslots_wrapper.scrollTop = card_height_px*(card_quantity/2-card_displayed/2)
@@ -61,10 +54,10 @@
 			lastScroll = timeslots_wrapper.scrollTop
 		}
 		const mobile_scrollHandler = () => {
-			if (timeslots_wrapper.scrollTop >= card_quantity*card_height_px) {
-				timeslots_wrapper.scrollTop = 1
-			} else if (timeslots_wrapper.scrollTop === 0) {
-				timeslots_wrapper.scrollTop = card_quantity*card_height_px-1
+			if (timeslots_wrapper.scrollTop >= card_quantity*card_height_px-1) {
+				timeslots_wrapper.scrollTop = 2
+			} else if (timeslots_wrapper.scrollTop <= 1) {
+				timeslots_wrapper.scrollTop = card_quantity*card_height_px-2
 			}
 		}
 		timeslots_wrapper.addEventListener(
@@ -73,16 +66,17 @@
 		)
 	})
 
-	$: card_quantity = hoursArray.length
-
+	// example how to reactivly update hours copyes
 	afterUpdate(() => {
 		if (isMobile) {
 			const timeslots_wrapper = document.getElementById("timeslots_wrapper")
 			if (timeslots_wrapper) {
+				// remove old copyes
 				const nodes_was_visible = [...document.getElementsByClassName("copy")]
 				nodes_was_visible.forEach(child => {
 					child.remove()
 				})
+				// create new clones
 				const nodes_visable_at_zeroScroll = [...timeslots_wrapper.children].slice(
 					0, card_displayed
 				)
@@ -98,7 +92,6 @@
 </script>
 
 <main>
-	<h1>Hello World!</h1>
 	{#if hoursArray.length > 0}
 		<button  on:click={remove_hour}>Remove Hour</button>
 	{:else}
@@ -106,12 +99,15 @@
 	{/if}
 	<div
 		id="timeslots_wrapper"
+		class="timeslots_wrapper"
 		style={`
 			height: ${card_height_px*card_displayed}px;
 			grid-auto-rows: ${card_height_px}px;
 		`}>
 		{#each hoursArray as hour_def (hour_def.hour)}
-			<Hour color={hour_def.color} hour={hour_def.hour} />
+			<div class="card-wrapper">
+				<div>{hour_def.hour}</div>
+			</div>
 		{/each}
 	</div>
 </main>
@@ -135,7 +131,7 @@
 		font-weight: 100;
 	}
 
-	div {
+	.timeslots_wrapper {
 		position: relative;
 		display: grid;
 		border: 4px double rgb(94, 94, 94);
@@ -148,6 +144,14 @@
 		// &::-webkit-scrollbar {
 		// 	display: none;
 		// }
+		& > .card-wrapper {
+			margin: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			border: 1px solid black;
+			box-sizing: border-box;
+		}
 	}
 
 	@media (min-width: 640px) {
