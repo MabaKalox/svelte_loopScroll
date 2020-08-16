@@ -97,7 +97,6 @@
 	{:else}
 		<button on:click={reset_hoursArray}>Reset</button>
 	{/if}
-	<Hour hour={10}></Hour>
 	<div
 		id="timeslots_wrapper"
 		class="timeslots_wrapper"
